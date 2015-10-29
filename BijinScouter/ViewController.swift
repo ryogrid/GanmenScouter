@@ -8,9 +8,17 @@
 
 import UIKit
 import Alamofire
+import AVFoundation
 
 class ViewController: UIViewController {
 
+    // セッション.
+    var mySession : AVCaptureSession!
+    // デバイス.
+    var myDevice : AVCaptureDevice!
+    // 画像のアウトプット.
+    var myImageOutput : AVCaptureStillImageOutput!
+    
     @IBOutlet weak var point_label: UILabel!
     
 
@@ -21,9 +29,6 @@ class ViewController: UIViewController {
     }
     
     func get_similarity2(){
-        var counter = 0
-        
-        
         let BijinImage = UIImage(named: "japanese_bijin.png")
         let imageData1:NSData = NSData(data:UIImagePNGRepresentation(BijinImage!)!)
         var face_id1:String? = nil
@@ -140,72 +145,56 @@ class ViewController: UIViewController {
         }
     }
     
-    
-    
-    
-    
-    
-    func get_similarity(){
-        // create the url-request
-        //let urlString = "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img"
-        let urlString = "http://127.0.0.1:8080/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img"
-        var urlRequest = NSMutableURLRequest(URL: NSURL(string: urlString)!)
-        
-        // set the method(HTTP-POST)
-        urlRequest.HTTPMethod = "POST"
-//        // set the header(s)
-
-        
-        let BijinImage = UIImage(named: "japanese_bijin.png")
-        
-        let imageData:NSData = NSData(data:UIImagePNGRepresentation(BijinImage!)!)
- 
-        let uniqueId = NSProcessInfo.processInfo().globallyUniqueString
-        var body: NSMutableData = NSMutableData()
-
-        var postData :String = String()
-//        var boundary:String = "---------------------------\(uniqueId)"
-        var boundary:String = "---------------------------jf74jd83ju3ud752"
-        
-        urlRequest.addValue("multipart/form-data;boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-        urlRequest.addValue(String(imageData.length), forHTTPHeaderField: "Content-Length")
-        urlRequest.addValue("ios app", forHTTPHeaderField: "User-Agent")
-        urlRequest.addValue("*/*", forHTTPHeaderField: "Accept")
-        urlRequest.addValue("100-continue", forHTTPHeaderField: "Expect")
-//        urlRequest.addValue(nil, forHTTPHeaderField: "Accept-Encoding")
-//        urlRequest.addValue(nil, forHTTPHeaderField: "Accept-Language")
-        //request.addValue("form-data; name=\"img\";", forHTTPHeaderField: "Content-Disposition")
-        //request.addValue("form-data; name=img;", forHTTPHeaderField: "Content-Disposition")
-        //       request.addValue("multipart/form-data;", forHTTPHeaderField: "Content-Type")
-        
-
-//        postData += "Content-Disposition: form-data; name=img;\r\n"
-//        postData += "Content-Type: application/octet-stream\r\n"
-//        postData += "Content-Transfer-Encoding: binary\r\n\r\n"
-        
-//        postData += "Content-Type: image/png\r\n\r\n"
-//        postData += "img=jieopwjioweklalsjoawejasfklsadjklaf\r\n"
-        postData += "\(boundary)\r\n"
-        body.appendData(postData.dataUsingEncoding(NSUTF8StringEncoding)!)
-        body.appendData(imageData)
-        postData += "\(boundary)\r\n"
-        body.appendData(postData.dataUsingEncoding(NSUTF8StringEncoding)!)
-        
-        urlRequest.HTTPBody = NSData(data:body)
-        
-        let config = NSURLSessionConfiguration.defaultSessionConfiguration()
-        let session = NSURLSession(configuration: config)
-        
-        let task: NSURLSessionDataTask = session.dataTaskWithRequest(urlRequest, completionHandler: { data, request, error in
-            print(NSString(data: data!, encoding: NSUTF8StringEncoding)!)
-            print(request)
-        })
-        task.resume()
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+
+        // セッションの作成.
+        mySession = AVCaptureSession()
+        
+        // デバイス一覧の取得.
+        let devices = AVCaptureDevice.devices()
+        
+        // バックカメラをmyDeviceに格納.
+        for device in devices{
+            if(device.position == AVCaptureDevicePosition.Back){
+                myDevice = device as! AVCaptureDevice
+            }
+        }
+        
+        // バックカメラからVideoInputを取得.
+        let videoInput = try! AVCaptureDeviceInput(device: myDevice)
+        
+        // セッションに追加.
+        mySession.addInput(videoInput)
+        
+        // 出力先を生成.
+        myImageOutput = AVCaptureStillImageOutput()
+        
+        // セッションに追加.
+        mySession.addOutput(myImageOutput)
+        
+        // 画像を表示するレイヤーを生成.
+        let myVideoLayer : AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: mySession)
+        myVideoLayer.frame = self.view.bounds
+        myVideoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+        
+        // Viewに追加.
+        self.view.layer.addSublayer(myVideoLayer)
+        
+        // セッション開始.
+        mySession.startRunning()
+        
+        // UIボタンを作成.
+        let myButton = UIButton(frame: CGRectMake(0,0,120,50))
+        myButton.backgroundColor = UIColor.redColor();
+        myButton.layer.masksToBounds = true
+        myButton.setTitle("撮影", forState: .Normal)
+        myButton.layer.cornerRadius = 20.0
+        myButton.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height-50)
+        myButton.addTarget(self, action: "onClickMyButton:", forControlEvents: .TouchUpInside)
+        
+        // UIボタンをViewに追加.
+        self.view.addSubview(myButton);
     }
 
     override func didReceiveMemoryWarning() {
@@ -213,6 +202,25 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-
+    // ボタンイベント.
+    func onClickMyButton(sender: UIButton){
+        
+        // ビデオ出力に接続.
+        let myVideoConnection = myImageOutput.connectionWithMediaType(AVMediaTypeVideo)
+        
+        // 接続から画像を取得.
+        self.myImageOutput.captureStillImageAsynchronouslyFromConnection(myVideoConnection, completionHandler: { (imageDataBuffer, error) -> Void in
+            
+            // 取得したImageのDataBufferをJpegに変換.
+            let myImageData : NSData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataBuffer)
+            
+            // JpegからUIIMageを作成.
+            let myImage : UIImage = UIImage(data: myImageData)!
+            
+            // アルバムに追加.
+            UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
+            
+        })
+    }
 }
 
