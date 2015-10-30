@@ -19,6 +19,10 @@ class ViewController: UIViewController {
     // 画像のアウトプット.
     var myImageOutput : AVCaptureStillImageOutput!
     
+    var myImageData : NSData!
+    
+    var myLabel: UILabel!
+    
     @IBOutlet weak var point_label: UILabel!
     
 
@@ -76,8 +80,8 @@ class ViewController: UIViewController {
     }
     
     func get_face_id2(id1 : String){
-        let EvalImage = UIImage(named: "i320.jpeg")
-        let imageData2:NSData = NSData(data:UIImagePNGRepresentation(EvalImage!)!)
+//        let EvalImage = UIImage(named: "i320.jpeg")
+        //let imageData2:NSData = NSData(data:UIImagePNGRepresentation(EvalImage!)!)
         var face_id2:String? = nil
         Alamofire.upload(.POST,
             "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img",
@@ -87,7 +91,7 @@ class ViewController: UIViewController {
                 //multipartFormData.appendBodyPart(data: "image".dataUsingEncoding(NSUTF8StringEncoding)!, name: "type")
                 // バイナリデータ
                 // サーバによってはファイル名や適切なMIMEタイプを指定しないとちゃんと処理してくれないかも
-                multipartFormData.appendBodyPart(data: imageData2, name: "img", fileName: "i320.jpeg", mimeType: "image/jpeg")
+                multipartFormData.appendBodyPart(data: self.myImageData, name: "img", fileName: "target_face.jpeg", mimeType: "image/jpeg")
             },
             // リクエストボディ生成のエンコード処理が完了したら呼ばれる
             encodingCompletion: { encodingResult in
@@ -96,7 +100,8 @@ class ViewController: UIViewController {
                 case .Success(let upload, _, _):
                     // 実際にAPIリクエストする
                     upload.responseString { str in
-                        //debugPrint(str.result.value)
+                        debugPrint(str.result.value)
+                        debugPrint(str.response)
                         var casted = str.result.value as NSString?
                         let pattern = "face_id.+[a-z0-9]+.+,"
                         let regex = try! NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions.CaseInsensitive)
@@ -141,7 +146,7 @@ class ViewController: UIViewController {
                 print(similarity!)
                 let rep1 = similarity!.stringByReplacingOccurrencesOfString("similarity\": ", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
                 let rep2 = rep1.stringByReplacingOccurrencesOfString("\"", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
-                self.point_label.text = rep2
+                self.myLabel.text = rep2
         }
     }
     
@@ -195,6 +200,11 @@ class ViewController: UIViewController {
         
         // UIボタンをViewに追加.
         self.view.addSubview(myButton);
+        
+        myLabel = UILabel(frame: CGRectMake(0,0,120,50))
+        myLabel.textColor = UIColor.whiteColor()
+        myLabel.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height-10)
+        self.view.addSubview(myLabel)
     }
 
     override func didReceiveMemoryWarning() {
@@ -212,14 +222,15 @@ class ViewController: UIViewController {
         self.myImageOutput.captureStillImageAsynchronouslyFromConnection(myVideoConnection, completionHandler: { (imageDataBuffer, error) -> Void in
             
             // 取得したImageのDataBufferをJpegに変換.
-            let myImageData : NSData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataBuffer)
+            self.myImageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataBuffer)
             
-            // JpegからUIIMageを作成.
-            let myImage : UIImage = UIImage(data: myImageData)!
+//            // JpegからUIIMageを作成.
+//            let myImage : UIImage = UIImage(data: myImageData)!
             
             // アルバムに追加.
-            UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
+//            UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
             
+            self.get_similarity2()
         })
     }
 }
