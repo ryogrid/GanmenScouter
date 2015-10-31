@@ -40,10 +40,6 @@ class ViewController: UIViewController {
             "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img",
             headers: nil,
             multipartFormData: { multipartFormData in
-                // 文字列データはUTF8エンコードでNSData型に
-                //multipartFormData.appendBodyPart(data: "image".dataUsingEncoding(NSUTF8StringEncoding)!, name: "type")
-                // バイナリデータ
-                // サーバによってはファイル名や適切なMIMEタイプを指定しないとちゃんと処理してくれないかも
                 multipartFormData.appendBodyPart(data: imageData1, name: "img", fileName: "japanese_bijin.png", mimeType: "image/png")
             },
             // リクエストボディ生成のエンコード処理が完了したら呼ばれる
@@ -53,7 +49,7 @@ class ViewController: UIViewController {
                 case .Success(let upload, _, _):
                     // 実際にAPIリクエストする
                     upload.responseString { str in
-                        //print(str.result.value)
+                        print(str.result.value)
                         var casted = str.result.value as NSString?
                         let pattern = "face_id.+[a-z0-9]+.+,"
                         let regex = try! NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions.CaseInsensitive)
@@ -83,15 +79,18 @@ class ViewController: UIViewController {
 //        let EvalImage = UIImage(named: "i320.jpeg")
         //let imageData2:NSData = NSData(data:UIImagePNGRepresentation(EvalImage!)!)
         var face_id2:String? = nil
+        
+        // JpegからUIIMageを作成.
+        let myImage : UIImage = UIImage(data: self.myImageData)!
+        
+        // アルバムに追加.
+        UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
+        
         Alamofire.upload(.POST,
             "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img",
             headers: nil,
             multipartFormData: { multipartFormData in
-                // 文字列データはUTF8エンコードでNSData型に
-                //multipartFormData.appendBodyPart(data: "image".dataUsingEncoding(NSUTF8StringEncoding)!, name: "type")
-                // バイナリデータ
-                // サーバによってはファイル名や適切なMIMEタイプを指定しないとちゃんと処理してくれないかも
-                multipartFormData.appendBodyPart(data: self.myImageData, name: "img", fileName: "target_face.jpeg", mimeType: "image/jpeg")
+                multipartFormData.appendBodyPart(data: self.myImageData, name: "img", fileName: "target_face.png", mimeType: "image/png")
             },
             // リクエストボディ生成のエンコード処理が完了したら呼ばれる
             encodingCompletion: { encodingResult in
@@ -113,6 +112,9 @@ class ViewController: UIViewController {
                                     break
                                 }
                         })
+                        if(face_id2 == nil){
+                            return
+                        }
                         let rep1 = face_id2!.stringByReplacingOccurrencesOfString("face_id\": \"", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
                         let rep2 = rep1.stringByReplacingOccurrencesOfString("\",", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
                         face_id2 = rep2
@@ -177,6 +179,7 @@ class ViewController: UIViewController {
         
         // セッションに追加.
         mySession.addOutput(myImageOutput)
+        mySession.sessionPreset = AVCaptureSessionPreset352x288 // AVCaptureSessionPresetMedium
         
         // 画像を表示するレイヤーを生成.
         let myVideoLayer : AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: mySession)
@@ -193,7 +196,7 @@ class ViewController: UIViewController {
         let myButton = UIButton(frame: CGRectMake(0,0,120,50))
         myButton.backgroundColor = UIColor.redColor();
         myButton.layer.masksToBounds = true
-        myButton.setTitle("撮影", forState: .Normal)
+        myButton.setTitle("判定", forState: .Normal)
         myButton.layer.cornerRadius = 20.0
         myButton.layer.position = CGPoint(x: self.view.bounds.width/2, y:self.view.bounds.height-50)
         myButton.addTarget(self, action: "onClickMyButton:", forControlEvents: .TouchUpInside)
@@ -223,12 +226,42 @@ class ViewController: UIViewController {
             
             // 取得したImageのDataBufferをJpegに変換.
             self.myImageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataBuffer)
+            var myUIImage = UIImage.init(data: self.myImageData)!
+            //myUIImage = UIImage.init(CGImage: myUIImage.CGImage!, scale: myUIImage.scale, orientation: UIImageOrientation.Up)
+ //           myUIImage = UIImage(CGImage: myUIImage.CGImage!, scale: 1.0, orientation: UIImageOrientation.Right)
+            self.myImageData = NSData(data:UIImagePNGRepresentation(myUIImage)!)
+ 
+/*
+            // CIFilterを生成。nameにどんなを処理するのか記入.
+            var myScaleFilter = CIFilter(name: "CILanczosScaleTransform")
             
-//            // JpegからUIIMageを作成.
-//            let myImage : UIImage = UIImage(data: myImageData)!
+            var inputUIData: UIImage = UIImage.init(data: self.myImageData)!
+            var inputCIData: CIImage = CIImage(image: inputUIData)!
+            // イメージのセット.
+            myScaleFilter!.setValue(inputCIData, forKey: kCIInputImageKey)
+            
+            // 画像サイズの倍率を渡す.
+            //myScaleFilter!.setValue(NSNumber(float: 0.25), forKey: kCIInputScaleKey)
+            
+            // 画像のアスペクト比を渡す
+            //myScaleFilter!.setValue(NSNumber(float: 1.0), forKey: kCIInputAspectRatioKey)
+            
+            ////myScaleFilter!.setValue(NSNumber(float: 90.0), forKey: kCIInputAngleKey)
+            
+            // フィルターを通した画像をアウトプット
+            let myOutputImage : CIImage = myScaleFilter!.outputImage!
+            
+            
+            // UIImageに変換
+            let myOutputUIImage: UIImage = UIImage(CIImage: myOutputImage)
+            
+            self.myImageData = UIImagePNGRepresentation(myOutputUIImage)
+*/
+            // JpegからUIIMageを作成.
+            //let myImage : UIImage = UIImage(data: self.myImageData)!
             
             // アルバムに追加.
-//            UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
+            //UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
             
             self.get_similarity2()
         })
