@@ -148,7 +148,10 @@ class ViewController: UIViewController {
                 print(similarity!)
                 let rep1 = similarity!.stringByReplacingOccurrencesOfString("similarity\": ", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
                 let rep2 = rep1.stringByReplacingOccurrencesOfString("\"", withString: "", options: NSStringCompareOptions.RegularExpressionSearch, range: nil)
-                self.myLabel.text = rep2
+                
+                var ret_val = Double(rep2)
+                var result_val = 50 + 2 * (ret_val! - 46)
+                self.myLabel.text = result_val.description
         }
     }
     
@@ -179,7 +182,7 @@ class ViewController: UIViewController {
         
         // セッションに追加.
         mySession.addOutput(myImageOutput)
-        mySession.sessionPreset = AVCaptureSessionPreset352x288 // AVCaptureSessionPresetMedium
+        mySession.sessionPreset = AVCaptureSessionPresetMedium //AVCaptureSessionPreset352x288
         
         // 画像を表示するレイヤーを生成.
         let myVideoLayer : AVCaptureVideoPreviewLayer = AVCaptureVideoPreviewLayer(session: mySession)
@@ -229,7 +232,21 @@ class ViewController: UIViewController {
             var myUIImage = UIImage.init(data: self.myImageData)!
             //myUIImage = UIImage.init(CGImage: myUIImage.CGImage!, scale: myUIImage.scale, orientation: UIImageOrientation.Up)
  //           myUIImage = UIImage(CGImage: myUIImage.CGImage!, scale: 1.0, orientation: UIImageOrientation.Right)
-            self.myImageData = NSData(data:UIImagePNGRepresentation(myUIImage)!)
+            
+            var imgSize: CGSize = CGSize.init(width: myUIImage.size.height, height: myUIImage.size.width)
+            UIGraphicsBeginImageContext(imgSize)
+            var context: CGContextRef = UIGraphicsGetCurrentContext()!
+            CGContextTranslateCTM(context, myUIImage.size.height/2, myUIImage.size.width/2) // 回転の中心点を移動
+            CGContextScaleCTM(context, 1.0, -1.0) // Y軸方向を補正
+            
+            var radian = CGFloat.init(270 * M_PI / 180)  // 90°回転させたい場合
+            CGContextRotateCTM(context, radian)
+            CGContextDrawImage(UIGraphicsGetCurrentContext(), CGRectMake(-myUIImage.size.height/2, -myUIImage.size.width/2, myUIImage.size.height, myUIImage.size.width), myUIImage.CGImage)
+            
+            var rotatedImage: UIImage = UIGraphicsGetImageFromCurrentImageContext()
+            
+            
+            self.myImageData = NSData(data:UIImagePNGRepresentation(rotatedImage)!)
  
 /*
             // CIFilterを生成。nameにどんなを処理するのか記入.
