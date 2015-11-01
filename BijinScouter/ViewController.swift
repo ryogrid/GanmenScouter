@@ -53,6 +53,10 @@ class ViewController: UIViewController {
                         var casted = str.result.value as NSString?
                         let pattern = "face_id.+[a-z0-9]+.+,"
                         let regex = try! NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions.CaseInsensitive)
+                        if(casted == nil){
+                            self.myLabel.text = "ネット接続失敗"
+                            return
+                        }
                         regex.enumerateMatchesInString(casted! as String, options: NSMatchingOptions.WithoutAnchoringBounds ,range: NSMakeRange(0, casted!.length),
                             usingBlock: {(result: NSTextCheckingResult?, flags: NSMatchingFlags, stop: UnsafeMutablePointer<ObjCBool>) -> Void in
                                 for i in 0...result!.numberOfRanges - 1 {
@@ -151,7 +155,7 @@ class ViewController: UIViewController {
                 
                 var ret_val = Double(rep2)
                 var result_val = 50 + 2 * (ret_val! - 46)
-                self.myLabel.text = result_val.description
+                self.myLabel.text = result_val.description + "点"
         }
     }
     

@@ -14,7 +14,6 @@
 		2A18385D1BBF039200FE7046 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2A18385B1BBF039200FE7046 /* LaunchScreen.xib */; };
 		2A1838691BBF039300FE7046 /* BijinScouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A1838681BBF039300FE7046 /* BijinScouterTests.swift */; };
 		2A1838731BBF08A700FE7046 /* japanese_bijin.png in Resources */ = {isa = PBXBuildFile; fileRef = 2A1838721BBF08A700FE7046 /* japanese_bijin.png */; };
-		2A1838751BBF08DE00FE7046 /* i320.jpeg in Resources */ = {isa = PBXBuildFile; fileRef = 2A1838741BBF08DE00FE7046 /* i320.jpeg */; };
 		2AD5C3761BE2ACBF004DDEEA /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2A18387F1BD1EAD900FE7046 /* Alamofire.framework */; };
 		2AD5C3781BE2AD0B004DDEEA /* Alamofire.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2A18387F1BD1EAD900FE7046 /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
@@ -104,7 +103,6 @@
 		2A1838671BBF039300FE7046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		2A1838681BBF039300FE7046 /* BijinScouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BijinScouterTests.swift; sourceTree = "<group>"; };
 		2A1838721BBF08A700FE7046 /* japanese_bijin.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = japanese_bijin.png; sourceTree = "<group>"; };
-		2A1838741BBF08DE00FE7046 /* i320.jpeg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = i320.jpeg; sourceTree = "<group>"; };
 		2A1838761BD1EAD900FE7046 /* Alamofire.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Alamofire.xcodeproj; path = "BijinScouter.xcodeproj/../../../../Downloads/Alamofire-master/Alamofire.xcodeproj"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -150,7 +148,6 @@
 			isa = PBXGroup;
 			children = (
 				2A1838721BBF08A700FE7046 /* japanese_bijin.png */,
-				2A1838741BBF08DE00FE7046 /* i320.jpeg */,
 				2A1838521BBF039200FE7046 /* AppDelegate.swift */,
 				2A1838541BBF039200FE7046 /* ViewController.swift */,
 				2A1838561BBF039200FE7046 /* Main.storyboard */,
@@ -329,7 +326,6 @@
 			files = (
 				2A1838581BBF039200FE7046 /* Main.storyboard in Resources */,
 				2A18385D1BBF039200FE7046 /* LaunchScreen.xib in Resources */,
-				2A1838751BBF08DE00FE7046 /* i320.jpeg in Resources */,
 				2A18385A1BBF039200FE7046 /* Images.xcassets in Resources */,
 				2A1838731BBF08A700FE7046 /* japanese_bijin.png in Resources */,
 			);
