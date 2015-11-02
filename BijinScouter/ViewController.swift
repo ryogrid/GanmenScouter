@@ -7,11 +7,16 @@
 //
 
 import UIKit
-import Alamofire
+//import Alamofire
 import AVFoundation
 
 class ViewController: UIViewController {
 
+    struct Alamofire {
+        static let manager = Manager.sharedInstance
+        static let URL = ParameterEncoding.URL
+    }
+    
     // セッション.
     var mySession : AVCaptureSession!
     // デバイス.
@@ -36,7 +41,7 @@ class ViewController: UIViewController {
         let BijinImage = UIImage(named: "japanese_bijin.png")
         let imageData1:NSData = NSData(data:UIImagePNGRepresentation(BijinImage!)!)
         var face_id1:String? = nil
-        Alamofire.upload(.POST,
+        Alamofire.manager.upload(.POST,
             "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img",
             headers: nil,
             multipartFormData: { multipartFormData in
@@ -90,7 +95,7 @@ class ViewController: UIViewController {
         // アルバムに追加.
         UIImageWriteToSavedPhotosAlbum(myImage, self, nil, nil)
         
-        Alamofire.upload(.POST,
+        Alamofire.manager.upload(.POST,
             "https://apius.faceplusplus.com/v2/detection/detect?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&img",
             headers: nil,
             multipartFormData: { multipartFormData in
@@ -134,7 +139,7 @@ class ViewController: UIViewController {
     }
     
     func req_similality(fid1 : String, fid2 : String){
-        Alamofire.request(.GET, "https://apius.faceplusplus.com/v2/recognition/compare?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&face_id1=\(fid1)&face_id2=\(fid2)")
+        Alamofire.manager.request(.GET, "https://apius.faceplusplus.com/v2/recognition/compare?api_secret=l7PsiUEj1TuF2b5_p369Ai8W6y_BnIsV&api_key=0e5ac228d92bc2c63c11c9aa47752b2a&face_id1=\(fid1)&face_id2=\(fid2)")
             .responseString { response in
                 print(response.result.value)
                 var similarity : String? = nil
